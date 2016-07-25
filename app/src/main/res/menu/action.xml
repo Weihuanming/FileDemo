@@ -1,0 +1,66 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context=".activities.MainActivity">
+
+
+    <item
+        android:id="@+id/action_search"
+        android:title="@string/action_search"
+        app:showAsAction="ifRoom"/>
+
+    <item
+        android:id="@+id/action_settings"
+        android:title="@string/action_settings"
+        app:showAsAction="ifRoom">
+        <menu>
+            <item
+                android:id="@+id/action_edit"
+                android:title="@string/action_edit"
+                app:showAsAction="ifRoom"
+            />
+
+            <item
+                android:id="@+id/action_create"
+                android:title="@string/action_create"
+                app:showAsAction="ifRoom"
+                />
+
+            <item
+                android:id="@+id/action_sort"
+                android:title="@string/action_sort"
+                app:showAsAction="ifRoom"
+                />
+        </menu>
+    </item>
+
+    <item
+        android:id="@+id/action_delete"
+        android:title="@string/action_delete"
+        app:showAsAction="ifRoom"/>
+
+    <item
+        android:id="@+id/action"
+        android:title="@string/action"
+        app:showAsAction="ifRoom">
+        <menu>
+            <item
+                android:id="@+id/action_send"
+                android:title="@string/action_send"
+                app:showAsAction="ifRoom"
+                />
+
+            <item
+                android:id="@+id/action_copy"
+                android:title="@string/action_copy"
+                app:showAsAction="ifRoom"
+                />
+
+            <item
+                android:id="@+id/action_rename"
+                android:title="@string/action_rename"
+                app:showAsAction="ifRoom"
+                />
+        </menu>
+    </item>
+</menu>

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#3F51B5</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#FF4081</color>
+
+    <color name="directory">#61000000</color>
+
+    <color name="misc_file">#8A000000</color>
+
+    <color name="audio">#EF6C00</color>
+
+    <color name="image">#9C27B0</color>
+
+    <color name="video">#F44336</color>
+
+    <color name="doc">#2196F3</color>
+
+    <color name="ppt">#FFC107</color>
+
+    <color name="xls">#4CAF50</color>
+
+    <color name="pdf">#F44336</color>
+
+    <color name="txt">#00BCD4</color>
+
+    <color name="zip">#FDD835</color>
+</resources>
