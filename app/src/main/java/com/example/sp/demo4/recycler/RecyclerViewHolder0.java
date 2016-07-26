@@ -30,8 +30,6 @@ public class RecyclerViewHolder0 extends RecyclerViewHolder {
 
     private TextView name;
 
-
-
     public RecyclerViewHolder0(Context context, RecyclerOnItemClickListener listener, View view) {
         super(context, listener, view);
     }
@@ -63,8 +61,6 @@ public class RecyclerViewHolder0 extends RecyclerViewHolder {
 
         checkbox.setOnClickListener(onActionClickListener);
 
-        checkbox.setOnLongClickListener(onActionLongClickListener);
-
         if (selected){
             checkbox.setChecked(true);
         }else {
@@ -85,20 +81,5 @@ public class RecyclerViewHolder0 extends RecyclerViewHolder {
     protected void bindName(File file) {
         boolean extension = getBoolean(context, "pref_extension", true);
         name.setText(extension ? getName(file) : file.getName());
-    }
-
-    private ShapeDrawable getBackground(int color)
-    {
-        ShapeDrawable shapeDrawable = new ShapeDrawable(new OvalShape());
-
-        int size = (int) context.getResources().getDimension(R.dimen.avatar_size);
-
-        shapeDrawable.setIntrinsicWidth(size);
-
-        shapeDrawable.setIntrinsicHeight(size);
-
-        shapeDrawable.getPaint().setColor(color);
-
-        return shapeDrawable;
     }
 }

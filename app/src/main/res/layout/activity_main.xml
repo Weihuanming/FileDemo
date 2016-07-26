@@ -20,21 +20,43 @@
             android:layout_height="?attr/actionBarSize"
             android:background="#FFA500"
             app:popupTheme="@style/AppTheme.PopupOverlay">
+
             <RelativeLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content">
+
                 <CheckBox
                     android:id="@+id/check"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="6dp"
                     android:visibility="gone"
+                    android:layout_centerVertical="true"
+                    />
+
+                <TextView
+                    android:id="@+id/check_all"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="14sp"
+                    android:textColor="#FFFFFF"
+                    android:layout_below="@+id/check"
+                    android:layout_marginStart="3dp"/>
+
+                <TextView
+                    android:id="@+id/cTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_toRightOf="@+id/check"
+                    android:layout_marginLeft="15dp"
+                    android:layout_centerVertical="true"
+                    android:textColor="#FFFFFF"
+                    android:textSize="20sp"
                     />
 
             </RelativeLayout>
 
-
         </android.support.v7.widget.Toolbar>
+
 
         <TextView
             android:id="@+id/path"

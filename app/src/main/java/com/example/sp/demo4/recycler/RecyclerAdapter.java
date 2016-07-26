@@ -4,6 +4,7 @@ import android.content.Context;
 import android.support.v7.util.SortedList;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.Toolbar;
 import android.util.SparseArray;
 import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
@@ -97,6 +98,22 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerViewHolder>{
         onSelectionListener.onSelectionChanged();
     }
 
+    public void selectAll(int position){
+        selectedItems.append(position,true);
+
+        notifyItemChanged(position);
+
+        onSelectionListener.onSelectionChanged();
+    }
+
+    public void cancelSelect(int position){
+        selectedItems.delete(position);
+
+        notifyItemChanged(position);
+
+        onSelectionListener.onSelectionChanged();
+    }
+
     public void toggle(int position)
     {
         if (getSelected(position)) selectedItems.delete(position);
@@ -172,7 +189,7 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerViewHolder>{
         onSelectionListener.onSelectionChanged();
     }
 
-    private ArrayList<File> getItems()
+    public ArrayList<File> getItems()
     {
         ArrayList<File> list = new ArrayList<>();
 

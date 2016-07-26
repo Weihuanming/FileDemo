@@ -28,8 +28,6 @@ public abstract class RecyclerViewHolder extends RecyclerView.ViewHolder {
 
     private View.OnClickListener onClickListener;
 
-    View.OnLongClickListener onActionLongClickListener;
-
     private View.OnLongClickListener onLongClickListener;
 
     public RecyclerViewHolder(Context context,RecyclerOnItemClickListener listener,View view) {
@@ -54,8 +52,6 @@ public abstract class RecyclerViewHolder extends RecyclerView.ViewHolder {
     protected abstract void bindName(File file);
 
     private void setClickListener(final RecyclerOnItemClickListener listener){
-
-        this.onActionClickListener=v->listener.onItemLongClick(getAdapterPosition());
 
         this.onActionClickListener=v->listener.onItemLongClick(getAdapterPosition());
 

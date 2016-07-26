@@ -16,6 +16,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.util.SortedList;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
@@ -34,6 +35,7 @@ import com.example.sp.demo4.utils.FileUtils;
 import com.example.sp.demo4.utils.PreferenceUtils;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 import static com.example.sp.demo4.utils.FileUtils.getInternalStorage;
@@ -47,9 +49,12 @@ public class MainActivity extends AppCompatActivity {
     private static final String EXTRA_NAME = "com.example.sp.demo4.EXTRA_NAME";
     private static final String SAVED_DIRECTORY = "com.example.sp.demo4.SAVED_DIRECTORY";
     private static final String SAVED_SELECTION = "com.example.sp.demo4.SAVED_SELECTION";
-    private Toolbar toolbar;
-    private CheckBox checkBox;
+    public Toolbar toolbar;
+    public CheckBox checkBox;
+    private TextView title;
+    private TextView checkAll;
     private TextView path;
+    private ArrayList<File> items;
     private RecyclerAdapter recyclerAdapter;
     private File currentDirectory;
     private CoordinatorLayout coordinatorLayout;
@@ -78,11 +83,16 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
 
+        checkBox=(CheckBox)toolbar.findViewById(R.id.check);
+        checkAll=(TextView)toolbar.findViewById(R.id.check_all);
+
         if (recyclerAdapter.flag)
         {
             recyclerAdapter.flag=false;
             recyclerAdapter.clearSelection();
             recyclerAdapter.notifyDataSetChanged();
+            checkBox.setVisibility(View.GONE);
+            checkAll.setText("");
             return;
         }
 
@@ -224,18 +234,44 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void invalidateTitle(){
+        setTitle(null);
+        title=(TextView)toolbar.findViewById(R.id.cTitle);
         if(recyclerAdapter.anySelected()){
             int selectedItemCount=recyclerAdapter.getSelectedItemCount();
-            toolbar.setTitle(String.format("%s",selectedItemCount));
+            title.setText(String.format("%s",selectedItemCount));
+        }
+        else if(recyclerAdapter.flag){
+            title.setText("选择项目");
         }
         else {
-            toolbar.setTitle("Demo4");
+            title.setText("");
         }
     }
 
     private void invalidateToolbar(){
 
-        if(path.getText().toString()!="设备存储") {
+        checkBox=(CheckBox)toolbar.findViewById(R.id.check);
+        checkAll=(TextView)toolbar.findViewById(R.id.check_all);
+
+        if(recyclerAdapter.flag==true){
+            items = recyclerAdapter.getItems();
+            toolbar.setNavigationIcon(null);
+            checkBox.setVisibility(View.VISIBLE);
+            checkAll.setText("全部");
+            checkBox.setOnClickListener(v->{
+                if (checkBox.isChecked()) {
+                    for (int i = 0; i < items.size(); i++) {
+                        recyclerAdapter.selectAll(i);
+                    }
+                }else {
+                    for (int i=0;i<items.size();i++){
+                        recyclerAdapter.cancelSelect(i);
+                    }
+                }
+            });
+            return;
+        }
+        else if(path.getText().toString()!="设备存储") {
             toolbar.setNavigationIcon(R.drawable.ic_back);
             toolbar.setNavigationOnClickListener(v -> {
                 if (!FileUtils.isStorage(currentDirectory)) {
@@ -246,11 +282,16 @@ public class MainActivity extends AppCompatActivity {
         }
         else {
             toolbar.setNavigationIcon(null);
+            return;
         }
     }
 
     private void actionEdit(){
-     //   checkBox=(CheckBox)toolbar.findViewById(R.id.check);
+
+        final int[] index = new int[1];
+        checkBox=(CheckBox)toolbar.findViewById(R.id.check);
+        checkAll=(TextView)toolbar.findViewById(R.id.check_all);
+
         recyclerAdapter.flag=true;
         /*if (recyclerAdapter.flag){
             checkBox.setVisibility(View.VISIBLE);
@@ -259,7 +300,24 @@ public class MainActivity extends AppCompatActivity {
         }*/
         recyclerAdapter.notifyDataSetChanged();
 
+        title.setText("选择项目");
+        checkBox.setVisibility(View.VISIBLE);
+        checkAll.setText("全部");
+        checkBox.setOnClickListener(v->{
+            items = recyclerAdapter.getItems();
+            if (checkBox.isChecked()) {
+                for (int i = 0; i < items.size(); i++) {
+                    recyclerAdapter.selectAll(i);
+                }
+            }else {
+                for (int i=0;i<items.size();i++){
+                    recyclerAdapter.cancelSelect(i);
+                }
+            }
+        });
+
         invalidateOptionsMenu();
+        invalidateToolbar();
     }
 
     private void actionCreate(){
@@ -436,7 +494,6 @@ public class MainActivity extends AppCompatActivity {
         recyclerAdapter.clear();
         recyclerAdapter.clearSelection();
         recyclerAdapter.addAll(FileUtils.getChildren(directory));
-        //invalidateToolbar();
     }
 
     private final class OnItemClickListener implements RecyclerOnItemClickListener
@@ -456,6 +513,8 @@ public class MainActivity extends AppCompatActivity {
             if (recyclerAdapter.flag)
             {
                 recyclerAdapter.toggle(position);
+
+                checkBox.setChecked(false);
 
                 return;
             }
@@ -526,7 +585,11 @@ public class MainActivity extends AppCompatActivity {
 
             recyclerAdapter.flag=true;
 
+            checkBox.setChecked(false);
+
             recyclerAdapter.notifyDataSetChanged();
+
+            invalidateToolbar();
 
             return true;
         }
