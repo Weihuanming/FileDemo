@@ -48,7 +48,7 @@
         app:showAsAction="ifRoom">
         <menu>
             <item
-                android:id="@+id/action_send"
+                android:id="@+id/action_move"
                 android:title="@string/action_send"
                 app:showAsAction="ifRoom"
                 />

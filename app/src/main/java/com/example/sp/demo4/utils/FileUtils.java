@@ -11,6 +11,9 @@ import android.webkit.MimeTypeMap;
 import com.example.sp.demo4.R;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.nio.channels.FileChannel;
 import java.util.ArrayList;
 
 /**
@@ -75,6 +78,46 @@ public class FileUtils {
                 return FileType.ZIP;
 
             return FileType.MISC_FILE;
+        }
+    }
+
+    public static File copyFile(File src, File path) throws Exception
+    {
+        try
+        {
+            if (src.isDirectory())
+            {
+                if (src.getPath().equals(path.getPath())) throw new Exception();
+
+                File check=new File(path,src.getName());
+
+                if (check.exists()){
+                    for (File file : src.listFiles()) copyFile(file, check);
+
+                    return check;
+                }
+                else{
+                    File directory = createDirectory(path, src.getName());
+
+                    for (File file : src.listFiles()) copyFile(file, directory);
+
+                    return directory;
+                }
+            }
+            else
+            {
+                File file = new File(path, src.getName());
+
+                FileChannel channel = new FileInputStream(src).getChannel();
+
+                channel.transferTo(0, channel.size(), new FileOutputStream(file).getChannel());
+
+                return file;
+            }
+        }
+        catch (Exception e)
+        {
+            throw new Exception(String.format("目标文件夹是源文件夹的子文件夹"));
         }
     }
 

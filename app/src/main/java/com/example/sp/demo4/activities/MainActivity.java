@@ -160,6 +160,12 @@ public class MainActivity extends AppCompatActivity {
             case R.id.action_rename:
                 actionRename();
                 return true;
+            case R.id.action_copy:;
+                actionCopy();
+                return true;
+            case R.id.action_move:
+                actionMove();
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -170,8 +176,8 @@ public class MainActivity extends AppCompatActivity {
 
         if (recyclerAdapter!=null){
             int count=recyclerAdapter.getSelectedItemCount();
-            menu.findItem(R.id.action_search).setVisible(count==0&&recyclerAdapter.flag==false);
-            menu.findItem(R.id.action_settings).setVisible(count==0&&recyclerAdapter.flag==false);
+            menu.findItem(R.id.action_search).setVisible(count==0&&!recyclerAdapter.flag);
+            menu.findItem(R.id.action_settings).setVisible(count==0&&!recyclerAdapter.flag);
             menu.findItem(R.id.action_delete).setVisible(count>=1);
             menu.findItem(R.id.action).setVisible(count>=1);
             menu.findItem(R.id.action_rename).setVisible(count==1);
@@ -253,7 +259,7 @@ public class MainActivity extends AppCompatActivity {
         checkBox=(CheckBox)toolbar.findViewById(R.id.check);
         checkAll=(TextView)toolbar.findViewById(R.id.check_all);
 
-        if(recyclerAdapter.flag==true){
+        if(recyclerAdapter.flag){
             items = recyclerAdapter.getItems();
             toolbar.setNavigationIcon(null);
             checkBox.setVisibility(View.VISIBLE);
@@ -271,7 +277,7 @@ public class MainActivity extends AppCompatActivity {
             });
             return;
         }
-        else if(path.getText().toString()!="设备存储") {
+        else if(!path.getText().toString().equals("设备存储")) {
             toolbar.setNavigationIcon(R.drawable.ic_back);
             toolbar.setNavigationOnClickListener(v -> {
                 if (!FileUtils.isStorage(currentDirectory)) {
@@ -288,16 +294,10 @@ public class MainActivity extends AppCompatActivity {
 
     private void actionEdit(){
 
-        final int[] index = new int[1];
         checkBox=(CheckBox)toolbar.findViewById(R.id.check);
         checkAll=(TextView)toolbar.findViewById(R.id.check_all);
 
         recyclerAdapter.flag=true;
-        /*if (recyclerAdapter.flag){
-            checkBox.setVisibility(View.VISIBLE);
-        }else {
-            checkBox.setVisibility(View.GONE);
-        }*/
         recyclerAdapter.notifyDataSetChanged();
 
         title.setText("选择项目");
@@ -450,8 +450,65 @@ public class MainActivity extends AppCompatActivity {
         inputDialog.show();
     }
 
-    private void transferFiles(final List<File> files, final Boolean delete){
+    private void actionCopy()
+    {
+        List<File> selectedItems = recyclerAdapter.getSelectedItems();
 
+        recyclerAdapter.clearSelection();
+
+        recyclerAdapter.flag=false;
+
+        checkBox.setVisibility(View.GONE);
+        checkAll.setText("");
+        title.setText("复制至");
+
+        recyclerAdapter.notifyDataSetChanged();
+
+        transferFiles(selectedItems, false);
+    }
+
+    private void actionMove()
+    {
+        List<File> selectedItems = recyclerAdapter.getSelectedItems();
+
+        recyclerAdapter.clearSelection();
+
+        recyclerAdapter.flag=false;
+
+        checkBox.setVisibility(View.GONE);
+        checkAll.setText("");
+        title.setText("移动至");
+
+        recyclerAdapter.notifyDataSetChanged();
+
+        transferFiles(selectedItems, true);
+    }
+
+    private void transferFiles(final List<File> files, final Boolean delete){
+        String paste = delete ? "moved" : "copied";
+
+        String message = String.format("%d items waiting to be %s", files.size(), paste);
+
+        View.OnClickListener onClickListener = v ->
+        {
+            try
+            {
+                for (File file : files)
+                {
+                    recyclerAdapter.addAll(FileUtils.copyFile(file, currentDirectory));
+
+                    if (delete) FileUtils.deleteFile(file);
+                }
+            }
+            catch (Exception e)
+            {
+                showMessage(e);
+            }
+        };
+
+        Snackbar.make(coordinatorLayout, message, Snackbar.LENGTH_INDEFINITE)
+                .setAction("Paste", onClickListener)
+                .show();
     }
 
     private void showMessage(Exception e)
