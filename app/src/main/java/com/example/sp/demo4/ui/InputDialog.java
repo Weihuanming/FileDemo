@@ -16,7 +16,7 @@ public abstract class InputDialog extends AlertDialog.Builder{
 
     public abstract void onActionClick(String text);
 
-    public InputDialog(Context context, String positive, String title){
+    public InputDialog(Context context, int positive, int title){
         super(context);
 
         View view=View.inflate(context, R.layout.dialog_edit_text,null);
@@ -25,10 +25,10 @@ public abstract class InputDialog extends AlertDialog.Builder{
 
         setView(view);
 
-        setNegativeButton("È¡Ïû",null);
+        setNegativeButton(R.string.cancal,null);
 
         setPositiveButton(positive,(dialog, which) ->{
-          if (editText.length()!=0) onActionClick(editText.getText().toString());
+            if (editText.length()!=0) onActionClick(editText.getText().toString());
         });
 
         setTitle(title);

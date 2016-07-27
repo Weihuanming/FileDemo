@@ -9,9 +9,6 @@ import android.widget.ImageView;
 
 import java.io.File;
 
-/**
- * Created by sp on 2016/7/18.
- */
 public abstract class RecyclerViewHolder extends RecyclerView.ViewHolder {
 
     final Context context;
@@ -77,6 +74,6 @@ public abstract class RecyclerViewHolder extends RecyclerView.ViewHolder {
     }
 
     void setVisibility(View view,Boolean visibility){
-        view.setVisibility(visibility?view.VISIBLE:view.GONE);
+        view.setVisibility(visibility? View.VISIBLE : View.GONE);
     }
 }

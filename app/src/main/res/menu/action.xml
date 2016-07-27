@@ -14,7 +14,7 @@
 
     <item
         android:id="@+id/action_settings"
-        android:title="@string/action_settings"
+        android:title="@string/settings"
         app:showAsAction="ifRoom">
         <menu>
             <item
@@ -61,7 +61,7 @@
 
             <item
                 android:id="@+id/action_rename"
-                android:title="@string/action_rename"
+                android:title="@string/rename"
                 app:showAsAction="ifRoom"
                 />
         </menu>

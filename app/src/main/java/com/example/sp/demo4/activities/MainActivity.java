@@ -19,6 +19,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.util.SortedList;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -35,6 +36,7 @@ import com.example.sp.demo4.utils.FileUtils;
 import com.example.sp.demo4.utils.PreferenceUtils;
 
 import java.io.File;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -160,7 +162,7 @@ public class MainActivity extends AppCompatActivity {
             case R.id.action_rename:
                 actionRename();
                 return true;
-            case R.id.action_copy:;
+            case R.id.action_copy:
                 actionCopy();
                 return true;
             case R.id.action_move:
@@ -223,11 +225,11 @@ public class MainActivity extends AppCompatActivity {
         recyclerAdapter.setOnItemClickListener(new OnItemClickListener(this));
         recyclerAdapter.setOnSelectionListener(() ->
         {
-             invalidateOptionsMenu();
+            invalidateOptionsMenu();
 
-             invalidateTitle();
+            invalidateTitle();
 
-             invalidateToolbar();
+            invalidateToolbar();
         });
         recyclerAdapter.setItemLayout(R.layout.item1);
         recyclerAdapter.setSpanCount(getResources().getInteger(R.integer.span_count0));
@@ -247,7 +249,7 @@ public class MainActivity extends AppCompatActivity {
             title.setText(String.format("%s",selectedItemCount));
         }
         else if(recyclerAdapter.flag){
-            title.setText("选择项目");
+            title.setText(R.string.title_select);
         }
         else {
             title.setText("");
@@ -263,7 +265,7 @@ public class MainActivity extends AppCompatActivity {
             items = recyclerAdapter.getItems();
             toolbar.setNavigationIcon(null);
             checkBox.setVisibility(View.VISIBLE);
-            checkAll.setText("全部");
+            checkAll.setText(R.string.all_select);
             checkBox.setOnClickListener(v->{
                 if (checkBox.isChecked()) {
                     for (int i = 0; i < items.size(); i++) {
@@ -277,13 +279,14 @@ public class MainActivity extends AppCompatActivity {
             });
             return;
         }
-        else if(!path.getText().toString().equals("设备存储")) {
+        else if(!path.getText().toString().equals(getString(R.string.device_store))) {
             toolbar.setNavigationIcon(R.drawable.ic_back);
             toolbar.setNavigationOnClickListener(v -> {
                 if (!FileUtils.isStorage(currentDirectory)) {
                     setPath(currentDirectory.getParentFile());
                     return;
                 }
+
             });
         }
         else {
@@ -300,9 +303,9 @@ public class MainActivity extends AppCompatActivity {
         recyclerAdapter.flag=true;
         recyclerAdapter.notifyDataSetChanged();
 
-        title.setText("选择项目");
+        title.setText(R.string.title_select);
         checkBox.setVisibility(View.VISIBLE);
-        checkAll.setText("全部");
+        checkAll.setText(R.string.all_select);
         checkBox.setOnClickListener(v->{
             items = recyclerAdapter.getItems();
             if (checkBox.isChecked()) {
@@ -322,7 +325,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void actionCreate(){
 
-        InputDialog inputDialog=new InputDialog(this,"新建","新建文件夹") {
+        InputDialog inputDialog=new InputDialog(this,R.string.create,R.string.action_create) {
             @Override
             public void onActionClick(String text) {
                 try {
@@ -350,21 +353,21 @@ public class MainActivity extends AppCompatActivity {
     private void actionDelete(final List<File> files){
         final File sourceDirectory=currentDirectory;
 
-        String message = String.format("%s个文件将被删除", files.size());
+        String message = String.format("%s", files.size())+getString(R.string.delete_message);
 
-        String sMessage=String.format("%s个文件被删除是否撤销",files.size());
+        String sMessage=String.format("%s",files.size()+getString(R.string.delete_undo));
 
         AlertDialog.Builder alert=new AlertDialog.Builder(this);
         alert.setTitle(message);
 
-        alert.setNegativeButton("取消",null);
+        alert.setNegativeButton(R.string.cancal,null);
 
-        alert.setPositiveButton("确定",(dialog, which) -> {
+        alert.setPositiveButton(R.string.ok,(dialog, which) -> {
 
             recyclerAdapter.removeAll(files);
 
             Snackbar.make(coordinatorLayout,sMessage,Snackbar.LENGTH_LONG)
-                    .setAction("撤销",v -> {
+                    .setAction(R.string.undo,v -> {
                         if (currentDirectory==null||currentDirectory.equals(sourceDirectory))
                         {
                             recyclerAdapter.addAll(files);
@@ -396,7 +399,8 @@ public class MainActivity extends AppCompatActivity {
 
         int checkedItem = PreferenceUtils.getInteger(this, "pref_sort", 1);
 
-        String sorting[] = {"时间", "名称", "大小"};
+        String sorting[] = {getString(R.string.sort_lastmodified),
+                getString(R.string.sort_name), getString(R.string.sort_size)};
 
         final int[] whichCheck = new int[1];
 
@@ -408,15 +412,15 @@ public class MainActivity extends AppCompatActivity {
             whichCheck[0] =which;
         });
 
-        builder.setNegativeButton("取消",null);
+        builder.setNegativeButton(R.string.cancal,null);
 
-        builder.setPositiveButton("完成",(dialog, which) ->{
+        builder.setPositiveButton(R.string.done,(dialog, which) ->{
             which=whichCheck[0];
             recyclerAdapter.update(which);
             dialog.dismiss();
         });
 
-        builder.setTitle("排序方式");
+        builder.setTitle(R.string.action_sort);
 
         builder.show();
     }
@@ -424,7 +428,7 @@ public class MainActivity extends AppCompatActivity {
     private void actionRename(){
         final List<File> selectedItems=recyclerAdapter.getSelectedItems();
 
-        InputDialog inputDialog=new InputDialog(this,"重命名","重命名文件夹") {
+        InputDialog inputDialog=new InputDialog(this,R.string.rename,R.string.action_rename) {
             @Override
             public void onActionClick(String text) {
                 recyclerAdapter.clearSelection();
@@ -460,7 +464,7 @@ public class MainActivity extends AppCompatActivity {
 
         checkBox.setVisibility(View.GONE);
         checkAll.setText("");
-        title.setText("复制至");
+        title.setText(R.string.copy);
 
         recyclerAdapter.notifyDataSetChanged();
 
@@ -477,7 +481,7 @@ public class MainActivity extends AppCompatActivity {
 
         checkBox.setVisibility(View.GONE);
         checkAll.setText("");
-        title.setText("移动至");
+        title.setText(R.string.move);
 
         recyclerAdapter.notifyDataSetChanged();
 
@@ -533,7 +537,7 @@ public class MainActivity extends AppCompatActivity {
     private void setPath(File directory){
 
         if(!directory.exists()){
-            Toast.makeText(this,"目录不存在",Toast.LENGTH_SHORT).show();
+            Toast.makeText(this,"directory is not exist",Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -541,10 +545,10 @@ public class MainActivity extends AppCompatActivity {
         path.setText(currentDirectory.getAbsolutePath());
         str=path.getText().toString();
         if (str.equals("/storage/emulated/0")){
-            path.setText("设备存储");
+            path.setText(R.string.device_store);;
         }
         else {
-            str=str.replaceAll("/storage/emulated/0","设备存储");
+            str=str.replaceAll("/storage/emulated/0",getString(R.string.device_store));
             str=str.replaceAll("/"," -> ");
             path.setText(str);
         }
@@ -629,7 +633,7 @@ public class MainActivity extends AppCompatActivity {
                     }
                     catch (Exception e)
                     {
-                        showMessage(String.format("不能打开%s", getName(file)));
+                        showMessage(getString(R.string.cannot_open)+String.format("%s", getName(file)));
                     }
                 }
             }
