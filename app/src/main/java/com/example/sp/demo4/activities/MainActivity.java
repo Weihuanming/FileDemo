@@ -3,6 +3,7 @@ package com.example.sp.demo4.activities;
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -30,6 +31,7 @@ import android.widget.Toast;
 import com.example.sp.demo4.R;
 import com.example.sp.demo4.recycler.RecyclerAdapter;
 import com.example.sp.demo4.recycler.RecyclerOnItemClickListener;
+import com.example.sp.demo4.ui.CheckDialog;
 import com.example.sp.demo4.ui.DividerItemDecoration;
 import com.example.sp.demo4.ui.InputDialog;
 import com.example.sp.demo4.utils.FileUtils;
@@ -45,6 +47,7 @@ import static com.example.sp.demo4.utils.FileUtils.getMimeType;
 import static com.example.sp.demo4.utils.FileUtils.getName;
 import static com.example.sp.demo4.utils.FileUtils.getPath;
 import static com.example.sp.demo4.utils.FileUtils.removeExtension;
+import static com.example.sp.demo4.utils.FileUtils.unzip;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -57,11 +60,18 @@ public class MainActivity extends AppCompatActivity {
     private TextView checkAll;
     private TextView path;
     private ArrayList<File> items;
+    private List<File> selects;
     private RecyclerAdapter recyclerAdapter;
+    private boolean isNull=false;
+    private boolean isCopy;
     private File currentDirectory;
     private CoordinatorLayout coordinatorLayout;
     private String name;
     private String str;
+    private boolean cpmv=false;
+    private TextView rename;
+    private TextView replace;
+    private TextView cancel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -78,7 +88,6 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume()
     {
         if (recyclerAdapter != null) recyclerAdapter.refresh();
-
         super.onResume();
     }
 
@@ -168,6 +177,12 @@ public class MainActivity extends AppCompatActivity {
             case R.id.action_move:
                 actionMove();
                 return true;
+            case R.id.cancel:
+                cancel();
+                return true;
+            case R.id.done:
+                done();
+                return true;
             default:
                 return super.onOptionsItemSelected(item);
         }
@@ -178,11 +193,15 @@ public class MainActivity extends AppCompatActivity {
 
         if (recyclerAdapter!=null){
             int count=recyclerAdapter.getSelectedItemCount();
-            menu.findItem(R.id.action_search).setVisible(count==0&&!recyclerAdapter.flag);
-            menu.findItem(R.id.action_settings).setVisible(count==0&&!recyclerAdapter.flag);
+            menu.findItem(R.id.action_search).setVisible(count==0&&!recyclerAdapter.flag&&!cpmv);
+            menu.findItem(R.id.action_settings).setVisible(count==0&&!recyclerAdapter.flag&&!cpmv);
+            menu.findItem(R.id.action_edit).setVisible(!isNull);
+            menu.findItem(R.id.action_sort).setVisible(!isNull);
             menu.findItem(R.id.action_delete).setVisible(count>=1);
             menu.findItem(R.id.action).setVisible(count>=1);
             menu.findItem(R.id.action_rename).setVisible(count==1);
+            menu.findItem(R.id.cancel).setVisible(cpmv);
+            menu.findItem(R.id.done).setVisible(cpmv);
         }
         return super.onPrepareOptionsMenu(menu);
     }
@@ -222,6 +241,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void iniRecycleView(){
         recyclerAdapter=new RecyclerAdapter(this);
+        new FileUtils(this);
         recyclerAdapter.setOnItemClickListener(new OnItemClickListener(this));
         recyclerAdapter.setOnSelectionListener(() ->
         {
@@ -247,9 +267,13 @@ public class MainActivity extends AppCompatActivity {
         if(recyclerAdapter.anySelected()){
             int selectedItemCount=recyclerAdapter.getSelectedItemCount();
             title.setText(String.format("%s",selectedItemCount));
-        }
-        else if(recyclerAdapter.flag){
+        } else if(recyclerAdapter.flag){
             title.setText(R.string.title_select);
+        }
+        if (isCopy&&cpmv){
+            title.setText(R.string.copy);
+        }else if(!isCopy&&cpmv){
+            title.setText(R.string.move);
         }
         else {
             title.setText("");
@@ -260,7 +284,6 @@ public class MainActivity extends AppCompatActivity {
 
         checkBox=(CheckBox)toolbar.findViewById(R.id.check);
         checkAll=(TextView)toolbar.findViewById(R.id.check_all);
-
         if(recyclerAdapter.flag){
             items = recyclerAdapter.getItems();
             toolbar.setNavigationIcon(null);
@@ -279,14 +302,13 @@ public class MainActivity extends AppCompatActivity {
             });
             return;
         }
-        else if(!path.getText().toString().equals(getString(R.string.device_store))) {
+        else if(!path.getText().toString().equals(getString(R.string.device_store))&&!cpmv) {
             toolbar.setNavigationIcon(R.drawable.ic_back);
             toolbar.setNavigationOnClickListener(v -> {
                 if (!FileUtils.isStorage(currentDirectory)) {
                     setPath(currentDirectory.getParentFile());
                     return;
                 }
-
             });
         }
         else {
@@ -346,8 +368,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void actionDelete(){
         actionDelete(recyclerAdapter.getSelectedItems());
-
-        recyclerAdapter.clearSelection();
     }
 
     private void actionDelete(final List<File> files){
@@ -365,7 +385,7 @@ public class MainActivity extends AppCompatActivity {
         alert.setPositiveButton(R.string.ok,(dialog, which) -> {
 
             recyclerAdapter.removeAll(files);
-
+            clearCheckbox();
             Snackbar.make(coordinatorLayout,sMessage,Snackbar.LENGTH_LONG)
                     .setAction(R.string.undo,v -> {
                         if (currentDirectory==null||currentDirectory.equals(sourceDirectory))
@@ -393,7 +413,7 @@ public class MainActivity extends AppCompatActivity {
         alert.show();
     }
 
-    private void  actionSort(){
+    private void actionSort(){
 
         final AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
@@ -431,7 +451,8 @@ public class MainActivity extends AppCompatActivity {
         InputDialog inputDialog=new InputDialog(this,R.string.rename,R.string.action_rename) {
             @Override
             public void onActionClick(String text) {
-                recyclerAdapter.clearSelection();
+
+                clearCheckbox();
 
                 try {
 
@@ -458,61 +479,108 @@ public class MainActivity extends AppCompatActivity {
     {
         List<File> selectedItems = recyclerAdapter.getSelectedItems();
 
-        recyclerAdapter.clearSelection();
+        selects=selectedItems;
 
-        recyclerAdapter.flag=false;
+        clearCheckbox();
 
-        checkBox.setVisibility(View.GONE);
-        checkAll.setText("");
-        title.setText(R.string.copy);
+        isCopy=true;
 
-        recyclerAdapter.notifyDataSetChanged();
+        cpmv=true;
 
-        transferFiles(selectedItems, false);
+        invalidateTitle();
     }
 
     private void actionMove()
     {
         List<File> selectedItems = recyclerAdapter.getSelectedItems();
 
-        recyclerAdapter.clearSelection();
+        selects=selectedItems;
 
-        recyclerAdapter.flag=false;
+        clearCheckbox();
 
-        checkBox.setVisibility(View.GONE);
-        checkAll.setText("");
-        title.setText(R.string.move);
+        isCopy=false;
 
-        recyclerAdapter.notifyDataSetChanged();
+        cpmv=true;
 
-        transferFiles(selectedItems, true);
+        invalidateTitle();
+    }
+
+    private void cancel(){
+
+        selects.clear();
+
+        cpmv=false;
+
+        invalidateTitle();
+
+        invalidateOptionsMenu();
+    }
+
+    private void done(){
+
+        transferFiles(selects,!isCopy);
+
+        cpmv=false;
+
+        invalidateTitle();
+
+        invalidateOptionsMenu();
     }
 
     private void transferFiles(final List<File> files, final Boolean delete){
-        String paste = delete ? "moved" : "copied";
 
-        String message = String.format("%d items waiting to be %s", files.size(), paste);
 
-        View.OnClickListener onClickListener = v ->
+        final Context context=this;
+
+        AlertDialog.Builder builder=new AlertDialog.Builder(this);
+        View view=View.inflate(context, R.layout.dialog_copy_check,null);
+        rename=(TextView)view.findViewById(R.id.rename);
+        replace=(TextView)view.findViewById(R.id.replace);
+        cancel=(TextView)view.findViewById(R.id.exit);
+
+        try
         {
-            try
+            for (File file : files)
             {
-                for (File file : files)
-                {
-                    recyclerAdapter.addAll(FileUtils.copyFile(file, currentDirectory));
+                File check=new File(currentDirectory,file.getName());
+                if(check.exists()){
+                    cancel.setOnClickListener(v->{
+                        cancel();
+                    });
+                    replace.setOnClickListener(v -> {
+                        try {
+                            recyclerAdapter.addAll(FileUtils.copyFile(file, currentDirectory));
+                            if (delete) FileUtils.deleteFile(file);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    });
+                    rename.setOnClickListener(v -> {
 
+                    });
+                    builder.setView(view);
+                    builder.setTitle(R.string.name_used);
+                    builder.show();
+                }
+                else {
+                    recyclerAdapter.addAll(FileUtils.copyFile(file, currentDirectory));
                     if (delete) FileUtils.deleteFile(file);
                 }
             }
-            catch (Exception e)
-            {
-                showMessage(e);
-            }
-        };
+            selects.clear();
+        }
+        catch (Exception e)
+        {
+            showMessage(e);
+        }
+    }
 
-        Snackbar.make(coordinatorLayout, message, Snackbar.LENGTH_INDEFINITE)
-                .setAction("Paste", onClickListener)
-                .show();
+    private void clearCheckbox(){
+        recyclerAdapter.clearSelection();
+        recyclerAdapter.flag=false;
+        checkBox.setVisibility(View.GONE);
+        checkAll.setText("");
+        recyclerAdapter.notifyDataSetChanged();
     }
 
     private void showMessage(Exception e)
@@ -542,6 +610,16 @@ public class MainActivity extends AppCompatActivity {
         }
 
         currentDirectory=directory;
+
+        String[] files=currentDirectory.list();
+
+        if (files.length==0){
+            isNull=true;
+        }
+        else {
+            isNull=false;
+        }
+
         path.setText(currentDirectory.getAbsolutePath());
         str=path.getText().toString();
         if (str.equals("/storage/emulated/0")){
@@ -602,7 +680,7 @@ public class MainActivity extends AppCompatActivity {
 
                     finish();
                 }
-                /*else if (FileUtils.FileType.getFileType(file) == FileUtils.FileType.ZIP)
+                else if (FileUtils.FileType.getFileType(file) == FileUtils.FileType.ZIP)
                 {
                     final ProgressDialog dialog = ProgressDialog.show(context, "", "Unzipping", true);
 
@@ -620,7 +698,7 @@ public class MainActivity extends AppCompatActivity {
                     });
 
                     thread.run();
-                }*/
+                }
                 else
                 {
                     try

@@ -10,16 +10,27 @@ import android.webkit.MimeTypeMap;
 
 import com.example.sp.demo4.R;
 
+import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.nio.channels.FileChannel;
 import java.util.ArrayList;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
+
+import android.content.Context;
 
 /**
  * Created by sp on 2016/7/18.
  */
 public class FileUtils {
+
+    private static Context context;
+
+    public FileUtils(Context context){
+        this.context=context;
+    }
 
     public enum FileType
     {
@@ -81,46 +92,6 @@ public class FileUtils {
         }
     }
 
-    public static File copyFile(File src, File path) throws Exception
-    {
-        try
-        {
-            if (src.isDirectory())
-            {
-                if (src.getPath().equals(path.getPath())) throw new Exception();
-
-                File check=new File(path,src.getName());
-
-                if (check.exists()){
-                    for (File file : src.listFiles()) copyFile(file, check);
-
-                    return check;
-                }
-                else{
-                    File directory = createDirectory(path, src.getName());
-
-                    for (File file : src.listFiles()) copyFile(file, directory);
-
-                    return directory;
-                }
-            }
-            else
-            {
-                File file = new File(path, src.getName());
-
-                FileChannel channel = new FileInputStream(src).getChannel();
-
-                channel.transferTo(0, channel.size(), new FileOutputStream(file).getChannel());
-
-                return file;
-            }
-        }
-        catch (Exception e)
-        {
-            throw new Exception(String.format("目标文件夹是源文件夹的子文件夹"));
-        }
-    }
-
     public static String getMimeType(File file)
     {
         //returns the mime type for the given file or null iff there is none
@@ -159,15 +130,55 @@ public class FileUtils {
         return Long.compare(length2,length1);
     }
 
+    public static File copyFile(File src, File path) throws Exception
+    {
+        try
+        {
+            if (src.isDirectory())
+            {
+                if (src.getPath().equals(path.getPath())) throw new Exception();
+
+                File check=new File(path,src.getName());
+
+                if (check.exists()){
+                    for (File file : src.listFiles()) copyFile(file, check);
+
+                    return check;
+                }
+                else{
+                    File directory = createDirectory(path, src.getName());
+
+                    for (File file : src.listFiles()) copyFile(file, directory);
+
+                    return directory;
+                }
+            }
+            else
+            {
+                File file = new File(path, src.getName());
+
+                FileChannel channel = new FileInputStream(src).getChannel();
+
+                channel.transferTo(0, channel.size(), new FileOutputStream(file).getChannel());
+
+                return file;
+            }
+        }
+        catch (Exception e)
+        {
+            throw new Exception(context.getString(R.string.cannot_copy));
+        }
+    }
+
     public static File createDirectory(File path, String name) throws Exception
     {
         File directory = new File(path, name);
 
         if (directory.mkdirs()) return directory;
 
-        if (directory.exists()) throw new Exception(String.format("%s已经存在", name));
+        if (directory.exists()) throw new Exception(String.format("%s", name)+context.getString(R.string.already_exist));
 
-        throw new Exception(String.format("无法创建%s", name));
+        throw new Exception(context.getString(R.string.cannot_create)+String.format("%s", name));
     }
 
     public static File deleteFile(File file) throws Exception{
@@ -177,7 +188,7 @@ public class FileUtils {
 
         if (file.delete()) return file;
 
-        throw new Exception(String.format("Error deleting %s",file.getName()));
+        throw new Exception(context.getString(R.string.cannot_delete));
     }
 
     public static File renameFile(File file,String name) throws Exception{
@@ -193,7 +204,7 @@ public class FileUtils {
             return newFile;
         }
 
-        throw new Exception(String.format("无法重命名 '%s'",file.getName()));
+        throw new Exception(context.getString(R.string.cannot_rename)+String.format("'%s'",file.getName()));
     }
 
     public static String getPath(File file)
@@ -276,6 +287,46 @@ public class FileUtils {
         }
 
         return list;
+    }
+
+    public static File unzip(File zip) throws Exception
+    {
+        File directory = createDirectory(zip.getParentFile(), removeExtension(zip.getName()));
+
+        FileInputStream fileInputStream = new FileInputStream(zip);
+
+        BufferedInputStream bufferedInputStream = new BufferedInputStream(fileInputStream);
+
+        try (ZipInputStream zipInputStream = new ZipInputStream(bufferedInputStream))
+        {
+            ZipEntry zipEntry;
+
+            while ((zipEntry = zipInputStream.getNextEntry()) != null)
+            {
+                byte[] buffer = new byte[1024];
+
+                File file = new File(directory, zipEntry.getName());
+
+                if (zipEntry.isDirectory())
+                {
+                    if (!file.mkdirs()) throw new Exception("Error uncompressing");
+                }
+                else
+                {
+                    int count;
+
+                    try (FileOutputStream fileOutputStream = new FileOutputStream(file))
+                    {
+                        while ((count = zipInputStream.read(buffer)) != -1)
+                        {
+                            fileOutputStream.write(buffer, 0, count);
+                        }
+                    }
+                }
+            }
+        }
+
+        return directory;
     }
 
     public static int getColorResource(File file)

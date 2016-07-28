@@ -67,4 +67,13 @@
         </menu>
     </item>
 
+    <item
+        android:id="@+id/cancel"
+        android:title="@string/cancal"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/done"
+        android:title="@string/done"
+        app:showAsAction="ifRoom"/>
+
 </menu>
