@@ -5,40 +5,34 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.provider.Settings;
-import android.support.annotation.NonNull;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.support.v7.util.SortedList;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.CheckBox;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.sp.demo4.R;
 import com.example.sp.demo4.recycler.RecyclerAdapter;
 import com.example.sp.demo4.recycler.RecyclerOnItemClickListener;
-import com.example.sp.demo4.ui.CheckDialog;
 import com.example.sp.demo4.ui.DividerItemDecoration;
 import com.example.sp.demo4.ui.InputDialog;
 import com.example.sp.demo4.utils.FileUtils;
 import com.example.sp.demo4.utils.PreferenceUtils;
 
 import java.io.File;
-import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -67,11 +61,8 @@ public class MainActivity extends AppCompatActivity {
     private File currentDirectory;
     private CoordinatorLayout coordinatorLayout;
     private String name;
-    private String str;
     private boolean cpmv=false;
-    private TextView rename;
-    private TextView replace;
-    private TextView cancel;
+    private RelativeLayout relativeLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -153,6 +144,7 @@ public class MainActivity extends AppCompatActivity {
         // as you specify a parent activity in AndroidManifest.xml.
         switch (item.getItemId()){
             case R.id.action_search:
+                actionSearch();
                 return true;
             case R.id.action_settings:
                 return true;
@@ -194,7 +186,8 @@ public class MainActivity extends AppCompatActivity {
         if (recyclerAdapter!=null){
             int count=recyclerAdapter.getSelectedItemCount();
             menu.findItem(R.id.action_search).setVisible(count==0&&!recyclerAdapter.flag&&!cpmv);
-            menu.findItem(R.id.action_settings).setVisible(count==0&&!recyclerAdapter.flag&&!cpmv);
+            boolean srch = false;
+            menu.findItem(R.id.action_settings).setVisible(count==0&&!recyclerAdapter.flag&&!cpmv&&!srch);
             menu.findItem(R.id.action_edit).setVisible(!isNull);
             menu.findItem(R.id.action_sort).setVisible(!isNull);
             menu.findItem(R.id.action_delete).setVisible(count>=1);
@@ -223,7 +216,6 @@ public class MainActivity extends AppCompatActivity {
             recyclerAdapter.addAll(FileUtils.searchFilesName(context, name));
 
             return;
-
         }
         setPath(getInternalStorage());
     }
@@ -269,8 +261,7 @@ public class MainActivity extends AppCompatActivity {
             title.setText(String.format("%s",selectedItemCount));
         } else if(recyclerAdapter.flag){
             title.setText(R.string.title_select);
-        }
-        if (isCopy&&cpmv){
+        }else if (isCopy&&cpmv){
             title.setText(R.string.copy);
         }else if(!isCopy&&cpmv){
             title.setText(R.string.move);
@@ -317,6 +308,19 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void actionSearch(){
+        InputDialog inputDialog = new InputDialog(this,R.string.action_search ,R.string.action_search )
+        {
+            @Override
+            public void onActionClick(String text)
+            {
+                setName(text);
+            }
+        };
+
+        inputDialog.show();
+    }
+
     private void actionEdit(){
 
         checkBox=(CheckBox)toolbar.findViewById(R.id.check);
@@ -356,6 +360,29 @@ public class MainActivity extends AppCompatActivity {
                     recyclerAdapter.clearSelection();
 
                     recyclerAdapter.add(directory);
+
+                }catch (Exception e){
+                    showMessage(e);
+                }
+            }
+        };
+
+        inputDialog.show();
+    }
+
+    private void actionCreateAndsetPath(){
+
+        InputDialog inputDialog=new InputDialog(this,R.string.create,R.string.action_create) {
+            @Override
+            public void onActionClick(String text) {
+                try {
+                    File directory= FileUtils.createDirectory(currentDirectory,text);
+
+                    recyclerAdapter.clearSelection();
+
+                    recyclerAdapter.add(directory);
+
+                    setPath(directory);
 
                 }catch (Exception e){
                     showMessage(e);
@@ -479,6 +506,12 @@ public class MainActivity extends AppCompatActivity {
     {
         List<File> selectedItems = recyclerAdapter.getSelectedItems();
 
+        relativeLayout=(RelativeLayout)findViewById(R.id.create_bar);
+
+        relativeLayout.setVisibility(View.VISIBLE);
+
+        relativeLayout.setOnClickListener(v -> actionCreateAndsetPath());
+
         selects=selectedItems;
 
         clearCheckbox();
@@ -494,6 +527,12 @@ public class MainActivity extends AppCompatActivity {
     {
         List<File> selectedItems = recyclerAdapter.getSelectedItems();
 
+        relativeLayout=(RelativeLayout)findViewById(R.id.create_bar);
+
+        relativeLayout.setVisibility(View.VISIBLE);
+
+        relativeLayout.setOnClickListener(v -> actionCreateAndsetPath());
+
         selects=selectedItems;
 
         clearCheckbox();
@@ -506,6 +545,10 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void cancel(){
+
+        relativeLayout=(RelativeLayout)findViewById(R.id.create_bar);
+
+        relativeLayout.setVisibility(View.GONE);
 
         selects.clear();
 
@@ -520,6 +563,10 @@ public class MainActivity extends AppCompatActivity {
 
         transferFiles(selects,!isCopy);
 
+        relativeLayout=(RelativeLayout)findViewById(R.id.create_bar);
+
+        relativeLayout.setVisibility(View.GONE);
+
         cpmv=false;
 
         invalidateTitle();
@@ -529,38 +576,54 @@ public class MainActivity extends AppCompatActivity {
 
     private void transferFiles(final List<File> files, final Boolean delete){
 
-
-        final Context context=this;
-
-        AlertDialog.Builder builder=new AlertDialog.Builder(this);
-        View view=View.inflate(context, R.layout.dialog_copy_check,null);
-        rename=(TextView)view.findViewById(R.id.rename);
-        replace=(TextView)view.findViewById(R.id.replace);
-        cancel=(TextView)view.findViewById(R.id.exit);
-
         try
         {
             for (File file : files)
             {
                 File check=new File(currentDirectory,file.getName());
                 if(check.exists()){
-                    cancel.setOnClickListener(v->{
+                    AlertDialog.Builder builder=new AlertDialog.Builder(this);
+                    View view=View.inflate(this,R.layout.dialog_copy_check,null);
+                    builder.setView(view);
+                    builder.setTitle(R.string.name_used);
+                    AlertDialog dialog=builder.show();
+                    TextView exit = (TextView) dialog.findViewById(R.id.exit);
+                    TextView replace = (TextView) dialog.findViewById(R.id.replace);
+                    TextView rename = (TextView) dialog.findViewById(R.id.rename);
+                    TextView used = (TextView) dialog.findViewById(R.id.used);
+                    used.setText(getString(R.string.this_name)+String.format("(%s)",check.getName())+getString(R.string.already_used));
+                    exit.setOnClickListener(v->{
                         cancel();
+                        dialog.dismiss();
                     });
-                    replace.setOnClickListener(v -> {
+                    replace.setOnClickListener(v->{
                         try {
                             recyclerAdapter.addAll(FileUtils.copyFile(file, currentDirectory));
                             if (delete) FileUtils.deleteFile(file);
                         } catch (Exception e) {
-                            e.printStackTrace();
+                            showMessage(e);
                         }
+                        dialog.dismiss();
                     });
-                    rename.setOnClickListener(v -> {
-
+                    rename.setOnClickListener(v->{
+                        File directory= null;
+                        int i=0;
+                        try {
+                            while (true){
+                                if (new File(currentDirectory,file.getName()+String.format(" (%s)",i)).exists()){
+                                    i++;
+                                }
+                                else {
+                                    break;
+                                }
+                            }
+                            directory = FileUtils.createDirectory(currentDirectory,file.getName()+String.format(" (%s)",i));
+                        } catch (Exception e) {
+                            showMessage(e);
+                        }
+                        recyclerAdapter.add(directory);
+                        dialog.dismiss();
                     });
-                    builder.setView(view);
-                    builder.setTitle(R.string.name_used);
-                    builder.show();
                 }
                 else {
                     recyclerAdapter.addAll(FileUtils.copyFile(file, currentDirectory));
@@ -590,9 +653,12 @@ public class MainActivity extends AppCompatActivity {
 
     private void showMessage(String message)
     {
-        Snackbar.make(coordinatorLayout, message, Snackbar.LENGTH_SHORT).show();
+        Snackbar.make(coordinatorLayout, message, Snackbar.LENGTH_LONG).show();
     }
 
+    private void showMess(String ms){
+        Toast.makeText(this,ms,Toast.LENGTH_LONG).show();
+    }
     private void setName(String name)
     {
         Intent intent = new Intent(this, MainActivity.class);
@@ -621,13 +687,13 @@ public class MainActivity extends AppCompatActivity {
         }
 
         path.setText(currentDirectory.getAbsolutePath());
-        str=path.getText().toString();
+        String str = path.getText().toString();
         if (str.equals("/storage/emulated/0")){
-            path.setText(R.string.device_store);;
+            path.setText(R.string.device_store);
         }
         else {
-            str=str.replaceAll("/storage/emulated/0",getString(R.string.device_store));
-            str=str.replaceAll("/"," -> ");
+            str = str.replaceAll("/storage/emulated/0",getString(R.string.device_store));
+            str = str.replaceAll("/"," -> ");
             path.setText(str);
         }
         recyclerAdapter.clear();
@@ -647,73 +713,78 @@ public class MainActivity extends AppCompatActivity {
         @Override
         public void onItemClick(int position)
         {
-            final File file = recyclerAdapter.get(position);
+            try{
 
-            if (recyclerAdapter.flag)
-            {
-                recyclerAdapter.toggle(position);
+                final File file = recyclerAdapter.get(position);
 
-                checkBox.setChecked(false);
-
-                return;
-            }
-            if (file.isDirectory())
-            {
-                if (file.canRead())
+                if (recyclerAdapter.flag)
                 {
-                    setPath(file);
+                    recyclerAdapter.toggle(position);
+
+                    checkBox.setChecked(false);
+
+                    return;
                 }
-                else
+                if (file.isDirectory())
                 {
-                    showMessage("Cannot open directory");
-                }
-            }
-            else
-            {
-                if (Intent.ACTION_GET_CONTENT.equals(getIntent().getAction()))
-                {
-                    Intent intent = new Intent();
-
-                    intent.setDataAndType(Uri.fromFile(file), getMimeType(file));
-
-                    setResult(Activity.RESULT_OK, intent);
-
-                    finish();
-                }
-                else if (FileUtils.FileType.getFileType(file) == FileUtils.FileType.ZIP)
-                {
-                    final ProgressDialog dialog = ProgressDialog.show(context, "", "Unzipping", true);
-
-                    Thread thread = new Thread(() -> {
-                        try
-                        {
-                            setPath(unzip(file));
-
-                            runOnUiThread(dialog::dismiss);
-                        }
-                        catch (Exception e)
-                        {
-                            showMessage(e);
-                        }
-                    });
-
-                    thread.run();
-                }
-                else
-                {
-                    try
+                    if (file.canRead())
                     {
-                        Intent intent = new Intent(Intent.ACTION_VIEW);
+                        setPath(file);
+                    }
+                    else
+                    {
+                        showMessage("Cannot open directory");
+                    }
+                }
+                else
+                {
+                    if (Intent.ACTION_GET_CONTENT.equals(getIntent().getAction()))
+                    {
+                        Intent intent = new Intent();
 
                         intent.setDataAndType(Uri.fromFile(file), getMimeType(file));
 
-                        startActivity(intent);
+                        setResult(Activity.RESULT_OK, intent);
+
+                        finish();
                     }
-                    catch (Exception e)
+                    else if (FileUtils.FileType.getFileType(file) == FileUtils.FileType.ZIP)
                     {
-                        showMessage(getString(R.string.cannot_open)+String.format("%s", getName(file)));
+                        final ProgressDialog dialog = ProgressDialog.show(context, "", "Unzipping", true);
+
+                        Thread thread = new Thread(() -> {
+                            try
+                            {
+                                setPath(unzip(file));
+
+                                runOnUiThread(dialog::dismiss);
+                            }
+                            catch (Exception e)
+                            {
+                                showMessage(e);
+                            }
+                        });
+
+                        thread.run();
+                    }
+                    else
+                    {
+                        try
+                        {
+                            Intent intent = new Intent(Intent.ACTION_VIEW);
+
+                            intent.setDataAndType(Uri.fromFile(file), getMimeType(file));
+
+                            startActivity(intent);
+                        }
+                        catch (Exception e)
+                        {
+                            showMessage(getString(R.string.cannot_open)+String.format("%s", getName(file)));
+                        }
                     }
                 }
+            }catch (Exception e){
+                showMess(getString(R.string.double_click));
             }
         }
 

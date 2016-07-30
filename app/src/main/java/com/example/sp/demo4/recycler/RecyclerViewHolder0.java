@@ -1,14 +1,8 @@
 package com.example.sp.demo4.recycler;
 
 import android.content.Context;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.ColorFilter;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.ShapeDrawable;
-import android.graphics.drawable.shapes.OvalShape;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.graphics.drawable.DrawableCompat;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.ImageView;
@@ -18,14 +12,9 @@ import com.example.sp.demo4.R;
 
 import java.io.File;
 
-import static com.example.sp.demo4.utils.FileUtils.getColorResource;
-import static com.example.sp.demo4.utils.FileUtils.getImageResource;
 import static com.example.sp.demo4.utils.FileUtils.getName;
 import static com.example.sp.demo4.utils.PreferenceUtils.getBoolean;
 
-/**
- * Created by sp on 2016/7/19.
- */
 public class RecyclerViewHolder0 extends RecyclerViewHolder {
 
     private TextView name;

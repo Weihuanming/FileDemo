@@ -6,10 +6,7 @@
     <item
         android:id="@+id/action_search"
         android:title="@string/action_search"
-        android:inputType="textCapWords"
-        android:imeOptions="actionSearch"
-        app:actionViewClass="android.support.v7.widget.SearchView"
-        app:showAsAction="ifRoom|collapseActionView"
+        app:showAsAction="ifRoom"
         />
 
     <item

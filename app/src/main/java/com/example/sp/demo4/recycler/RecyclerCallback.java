@@ -9,9 +9,6 @@ import com.example.sp.demo4.utils.PreferenceUtils;
 
 import java.io.File;
 
-/**
- * Created by sp on 2016/7/18.
- */
 public class RecyclerCallback extends SortedListAdapterCallback<File> {
 
     private int criteria;

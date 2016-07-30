@@ -2,7 +2,6 @@ package com.example.sp.demo4.recycler;
 
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.ImageView;
@@ -16,10 +15,6 @@ public abstract class RecyclerViewHolder extends RecyclerView.ViewHolder {
     ImageView image;
 
     CheckBox checkbox;
-
-    Toolbar toolbar;
-
-    private RecyclerAdapter recyclerAdapter;
 
     View.OnClickListener onActionClickListener;
 
@@ -71,9 +66,5 @@ public abstract class RecyclerViewHolder extends RecyclerView.ViewHolder {
 
         bindName(file);
 
-    }
-
-    void setVisibility(View view,Boolean visibility){
-        view.setVisibility(visibility? View.VISIBLE : View.GONE);
     }
 }

@@ -4,25 +4,17 @@ import android.content.Context;
 import android.support.v7.util.SortedList;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
-import android.util.SparseArray;
 import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
 
 import com.example.sp.demo4.R;
-import com.example.sp.demo4.activities.MainActivity;
 
 import java.io.File;
-import java.io.InterruptedIOException;
 import java.util.ArrayList;
 import java.util.Collection;
 
-/**
- * Created by sp on 2016/7/18.
- */
 public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerViewHolder>{
 
     private final Context context;
@@ -34,7 +26,6 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerViewHolder>{
     private RecyclerOnItemClickListener onItemClickListener;
     private RecyclerOnSelectionListener onSelectionListener;
     public boolean flag=false;
-    public boolean isCheck;
 
     public RecyclerAdapter(Context context){
 
@@ -60,7 +51,6 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerViewHolder>{
         recyclerView.setLayoutManager(new GridLayoutManager(context,spanCount));
         super.onAttachedToRecyclerView(recyclerView);
     }
-
 
     @Override
     public void onBindViewHolder(RecyclerViewHolder holder, int position) {
@@ -184,7 +174,9 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerViewHolder>{
 
         selectedItems.clear();
 
-        for (int i : selectedPositions) notifyItemChanged(i);
+        for (int i : selectedPositions) {
+            notifyItemChanged(i);
+        }
 
         onSelectionListener.onSelectionChanged();
     }
