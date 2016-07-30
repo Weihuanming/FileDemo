@@ -9,10 +9,13 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.support.design.widget.CoordinatorLayout;
+import android.support.design.widget.NavigationView;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
@@ -36,16 +39,20 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.example.sp.demo4.utils.FileUtils.getImageLibrary;
 import static com.example.sp.demo4.utils.FileUtils.getInternalStorage;
 import static com.example.sp.demo4.utils.FileUtils.getMimeType;
 import static com.example.sp.demo4.utils.FileUtils.getName;
 import static com.example.sp.demo4.utils.FileUtils.getPath;
+import static com.example.sp.demo4.utils.FileUtils.getPublicDirectory;
+import static com.example.sp.demo4.utils.FileUtils.getStorageUsage;
 import static com.example.sp.demo4.utils.FileUtils.removeExtension;
 import static com.example.sp.demo4.utils.FileUtils.unzip;
 
 public class MainActivity extends AppCompatActivity {
 
     private static final String EXTRA_NAME = "com.example.sp.demo4.EXTRA_NAME";
+    private static final String EXTRA_TYPE="com.example.sp.demo4.EXTRA_TYPE";
     private static final String SAVED_DIRECTORY = "com.example.sp.demo4.SAVED_DIRECTORY";
     private static final String SAVED_SELECTION = "com.example.sp.demo4.SAVED_SELECTION";
     public Toolbar toolbar;
@@ -59,8 +66,11 @@ public class MainActivity extends AppCompatActivity {
     private boolean isNull=false;
     private boolean isCopy;
     private File currentDirectory;
+    private DrawerLayout drawerLayout;
+    private NavigationView navigationView;
     private CoordinatorLayout coordinatorLayout;
     private String name;
+    private String type;
     private boolean cpmv=false;
     private RelativeLayout relativeLayout;
 
@@ -71,8 +81,12 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         iniAppBarLayout();
         initCoordinatorLayout();
+        iniDrawerLayout();
+        iniNavigationView();
         iniRecycleView();
         loadIntoRecyclerView();
+        invalidateToolbar();
+        invalidateTitle();
     }
 
     @Override
@@ -201,6 +215,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void initActivityFromIntent() {
         name = getIntent().getStringExtra(EXTRA_NAME);
+        type = getIntent().getStringExtra(EXTRA_TYPE);
     }
 
     private void loadIntoRecyclerView(){
@@ -217,6 +232,15 @@ public class MainActivity extends AppCompatActivity {
 
             return;
         }
+        if (type!=null){
+            switch (type){
+                case "image":
+                    recyclerAdapter.addAll(getImageLibrary(context));
+                    break;
+            }
+            return;
+        }
+
         setPath(getInternalStorage());
     }
 
@@ -231,6 +255,44 @@ public class MainActivity extends AppCompatActivity {
         coordinatorLayout = (CoordinatorLayout) findViewById(R.id.coordinator_layout);
     }
 
+    private void iniDrawerLayout(){
+        drawerLayout=(DrawerLayout)findViewById(R.id.drawer_layout);
+
+        if (drawerLayout==null) return;
+
+        if(name!=null||type!=null){
+            drawerLayout.setDrawerLockMode(DrawerLayout.LOCK_MODE_LOCKED_CLOSED);
+        }
+    }
+
+    private void iniNavigationView(){
+        navigationView=(NavigationView)findViewById(R.id.navigation_view);
+
+        if (navigationView==null)return;
+
+        navigationView.setNavigationItemSelectedListener(item -> {
+            switch (item.getItemId()){
+                case R.id.navigation_image:
+                    setType("image");
+                    return true;
+            }
+            drawerLayout.closeDrawers();
+            switch (item.getItemId()){
+                case R.id.navigation_directory_0:
+                    setPath(getPublicDirectory(getString(R.string.DCIM)));
+                    return true;
+                default:
+                    return true;
+            }
+        });
+
+        TextView textView=(TextView)navigationView.getHeaderView(0).findViewById(R.id.header);
+
+        textView.setText(getStorageUsage(this));
+
+        textView.setOnClickListener(v->startActivity(new Intent(Settings.ACTION_INTERNAL_STORAGE_SETTINGS)));
+    }
+
     private void iniRecycleView(){
         recyclerAdapter=new RecyclerAdapter(this);
         new FileUtils(this);
@@ -243,8 +305,18 @@ public class MainActivity extends AppCompatActivity {
 
             invalidateToolbar();
         });
-        recyclerAdapter.setItemLayout(R.layout.item1);
-        recyclerAdapter.setSpanCount(getResources().getInteger(R.integer.span_count0));
+        if (type!=null){
+            switch (type){
+                case "image":
+                    recyclerAdapter.setItemLayout(R.layout.list_item1);
+                    recyclerAdapter.setSpanCount(getResources().getInteger(R.integer.span_count1));
+                    break;
+            }
+        }else {
+            recyclerAdapter.setItemLayout(R.layout.list_item0);
+            recyclerAdapter.setSpanCount(getResources().getInteger(R.integer.span_count0));
+        }
+
 
         RecyclerView recyclerView=(RecyclerView)findViewById(R.id.recycle_view);
         if(recyclerView!=null){
@@ -293,7 +365,7 @@ public class MainActivity extends AppCompatActivity {
             });
             return;
         }
-        else if(!path.getText().toString().equals(getString(R.string.device_store))&&!cpmv) {
+        else if(!path.getText().toString().equals(getString(R.string.device_store))&&!cpmv&&name==null) {
             toolbar.setNavigationIcon(R.drawable.ic_back);
             toolbar.setNavigationOnClickListener(v -> {
                 if (!FileUtils.isStorage(currentDirectory)) {
@@ -301,6 +373,10 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
             });
+        }else if (name!=null){
+            toolbar.setNavigationIcon(R.drawable.ic_back);
+
+            toolbar.setNavigationOnClickListener(v->finish());
         }
         else {
             toolbar.setNavigationIcon(null);
@@ -664,6 +740,14 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(this, MainActivity.class);
 
         intent.putExtra(EXTRA_NAME, name);
+
+        startActivity(intent);
+    }
+
+    private void setType(String type){
+        Intent intent=new Intent(this,MainActivity.class);
+
+        intent.putExtra(EXTRA_TYPE,type);
 
         startActivity(intent);
     }

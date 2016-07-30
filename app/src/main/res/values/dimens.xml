@@ -4,5 +4,6 @@
     <dimen name="activity_vertical_margin">16dp</dimen>
     <dimen name="fab_margin">16dp</dimen>
     <integer name="span_count0">1</integer>
+    <integer name="span_count1">1</integer>
     <dimen name="avatar_size">40dp</dimen>
 </resources>

@@ -40,8 +40,10 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerViewHolder>{
 
         View itemView= LayoutInflater.from(context).inflate(itemLayout,parent,false);
         switch (itemLayout){
-            case R.layout.item1:
+            case R.layout.list_item0:
                 return new RecyclerViewHolder0(context,onItemClickListener,itemView);
+            case R.layout.list_item1:
+                return new RecyclerViewHolder1(context,onItemClickListener,itemView);
             default:
                 return null;
         }

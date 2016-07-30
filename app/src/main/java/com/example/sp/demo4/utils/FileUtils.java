@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.text.format.Formatter;
 import android.webkit.MimeTypeMap;
 
 import com.example.sp.demo4.R;
@@ -19,17 +20,12 @@ import java.util.ArrayList;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import android.content.Context;
-
-/**
- * Created by sp on 2016/7/18.
- */
 public class FileUtils {
 
     private static Context context;
 
     public FileUtils(Context context){
-        this.context=context;
+        FileUtils.context =context;
     }
 
     public enum FileType
@@ -244,6 +240,32 @@ public class FileUtils {
         return index != -1 ? filename.substring(0, index) : filename;
     }
 
+    public static String getStorageUsage(Context context){
+        File internal=getInternalStorage();
+
+        File external=getExternalStorage();
+
+        long f=internal.getFreeSpace();
+
+        long t=internal.getTotalSpace();
+
+        if (external!=null){
+            f+=external.getFreeSpace();
+
+            t+=external.getTotalSpace();
+        }
+
+        String use= Formatter.formatFileSize(context,t-f);
+
+        String tot=Formatter.formatFileSize(context,t);
+
+        return String.format("%s  ",tot)+context.getString(R.string.used_of)+String.format("  %s",use);
+    }
+
+    public static File getPublicDirectory(String type){
+        return Environment.getExternalStoragePublicDirectory(type);
+    }
+
     public static File[] getChildren(File directory)
     {
         if (!directory.canRead()) return null;
@@ -266,6 +288,30 @@ public class FileUtils {
             default:
                 return removeExtension(file.getName());
         }
+    }
+
+    public static ArrayList<File> getImageLibrary(Context context){
+
+        ArrayList<File> list=new ArrayList<>();
+
+        Uri uri=MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+
+        String[] datas=new String[]{MediaStore.Images.Media.DATA};
+
+        Cursor cursor=new CursorLoader(context,uri,datas,null,null,null).loadInBackground();
+
+        if (cursor!=null){
+
+            while (cursor.moveToNext()){
+                File file=new File(cursor.getString(cursor.getColumnIndex(datas[0])));
+                if (file.exists()){
+                    list.add(file);
+                }
+            }
+            cursor.close();
+        }
+
+        return list;
     }
 
     public static ArrayList<File> searchFilesName(Context context,String name){
