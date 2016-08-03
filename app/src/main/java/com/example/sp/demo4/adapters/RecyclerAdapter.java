@@ -1,4 +1,4 @@
-package com.example.sp.demo4.recycler;
+package com.example.sp.demo4.adapters;
 
 import android.content.Context;
 import android.support.v7.util.SortedList;
@@ -10,6 +10,13 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.sp.demo4.R;
+import com.example.sp.demo4.recycler.RecyclerCallback;
+import com.example.sp.demo4.recycler.RecyclerOnItemClickListener;
+import com.example.sp.demo4.recycler.RecyclerOnSelectionListener;
+import com.example.sp.demo4.recycler.RecyclerViewHolder;
+import com.example.sp.demo4.recycler.RecyclerViewHolder0;
+import com.example.sp.demo4.recycler.RecyclerViewHolder1;
+import com.example.sp.demo4.recycler.RecyclerViewHolder1_1;
 
 import java.io.File;
 import java.util.ArrayList;

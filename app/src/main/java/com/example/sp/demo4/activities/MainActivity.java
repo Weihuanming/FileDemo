@@ -28,7 +28,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.example.sp.demo4.R;
-import com.example.sp.demo4.recycler.RecyclerAdapter;
+import com.example.sp.demo4.adapters.RecyclerAdapter;
 import com.example.sp.demo4.recycler.RecyclerOnItemClickListener;
 import com.example.sp.demo4.ui.DividerItemDecoration;
 import com.example.sp.demo4.ui.InputDialog;
@@ -36,7 +36,6 @@ import com.example.sp.demo4.utils.FileUtils;
 import com.example.sp.demo4.utils.PreferenceUtils;
 
 import java.io.File;
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
