@@ -44,6 +44,8 @@ public class RecyclerAdapter extends RecyclerView.Adapter<RecyclerViewHolder>{
                 return new RecyclerViewHolder0(context,onItemClickListener,itemView);
             case R.layout.list_item1:
                 return new RecyclerViewHolder1(context,onItemClickListener,itemView);
+            case R.layout.list_item1_1:
+                return new RecyclerViewHolder1_1(context,onItemClickListener,itemView);
             default:
                 return null;
         }

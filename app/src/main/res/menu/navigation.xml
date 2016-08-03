@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group
+        android:id="@+id/navigation_group0">
+
+        <item
+            android:id="@+id/navigation_image"
+            android:title="@string/navigation_image"
+            android:icon="@drawable/ic_library_image" />
+
+        <item
+            android:id="@+id/navigation_largerimage"
+            android:title="@string/large_picture"
+            android:icon="@drawable/ic_library_image"/>
+
+    </group>
+
+    <group
+        android:id="@+id/navigation_group1">
+
+        <item
+            android:id="@+id/navigation_directory_0"
+            android:icon="@drawable/ic_directory"
+            android:title="@string/DCIM"/>
+
+    </group>
+</menu>

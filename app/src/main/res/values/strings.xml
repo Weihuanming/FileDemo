@@ -2,6 +2,7 @@
     <string name="app_name">Demo4</string>
     <string name="used_of">已使用</string>
     <string name="navigation_image">图片</string>
+    <string name="large_picture">大图</string>
     <string name="DCIM">DCIM</string>
     <string name="action_search">搜索</string>
     <string name="settings">更多</string>

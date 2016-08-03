@@ -30,7 +30,7 @@ public class FileUtils {
 
     public enum FileType
     {
-        DIRECTORY, MISC_FILE, AUDIO, IMAGE, VIDEO, DOC, PPT, XLS, PDF, TXT, ZIP;
+        DIRECTORY, MISC_FILE, IMAGE, ZIP;
 
         public static FileType getFileType(File file)
         {
@@ -42,44 +42,8 @@ public class FileUtils {
             if (mime == null)
                 return FileType.MISC_FILE;
 
-            if (mime.startsWith("audio"))
-                return FileType.AUDIO;
-
             if (mime.startsWith("image"))
                 return FileType.IMAGE;
-
-            if (mime.startsWith("video"))
-                return FileType.VIDEO;
-
-            if (mime.startsWith("application/ogg"))
-                return FileType.AUDIO;
-
-            if (mime.startsWith("application/msword"))
-                return FileType.DOC;
-
-            if (mime.startsWith("application/vnd.ms-word"))
-                return FileType.DOC;
-
-            if (mime.startsWith("application/vnd.ms-powerpoint"))
-                return FileType.PPT;
-
-            if (mime.startsWith("application/vnd.ms-excel"))
-                return FileType.XLS;
-
-            if (mime.startsWith("application/vnd.openxmlformats-officedocument.wordprocessingml"))
-                return FileType.DOC;
-
-            if (mime.startsWith("application/vnd.openxmlformats-officedocument.presentationml"))
-                return FileType.PPT;
-
-            if (mime.startsWith("application/vnd.openxmlformats-officedocument.spreadsheetml"))
-                return FileType.XLS;
-
-            if (mime.startsWith("application/pdf"))
-                return FileType.PDF;
-
-            if (mime.startsWith("text"))
-                return FileType.TXT;
 
             if (mime.startsWith("application/zip"))
                 return FileType.ZIP;
@@ -373,56 +337,5 @@ public class FileUtils {
         }
 
         return directory;
-    }
-
-    public static int getColorResource(File file)
-    {
-        switch (FileType.getFileType(file))
-        {
-            case DIRECTORY:
-                return R.color.directory;
-
-            case MISC_FILE:
-                return R.color.misc_file;
-
-            case AUDIO:
-                return R.color.audio;
-
-            case IMAGE:
-                return R.color.image;
-
-            case VIDEO:
-                return R.color.video;
-
-            case DOC:
-                return R.color.doc;
-
-            case PPT:
-                return R.color.ppt;
-
-            case XLS:
-                return R.color.xls;
-
-            case PDF:
-                return R.color.pdf;
-
-            case TXT:
-                return R.color.txt;
-
-            case ZIP:
-                return R.color.zip;
-
-            default:
-                return 0;
-        }
-    }
-
-    public static int getImageResource(File file) {
-        switch (FileType.getFileType(file)) {
-            case DIRECTORY:
-                return R.drawable.ic_directory;
-            default:
-                return 0;
-        }
     }
 }

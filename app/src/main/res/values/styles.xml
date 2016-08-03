@@ -6,6 +6,7 @@
         <item name="colorPrimary">#FFFFFF</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
         <item name="colorAccent">#FFC107</item>
+        <item name="android:windowFullscreen">true</item>
     </style>
 
     <style name="Text">
@@ -14,7 +15,7 @@
         <item name="android:singleLine">true</item>
     </style>
 
-    <style name="Text.Subhead" >
+    <style name="Text.Subhead">
         <item name="android:textAppearance">@style/TextAppearance.AppCompat.Subhead</item>
         <item name="android:textColor">?android:textColorPrimary</item>
     </style>
@@ -27,5 +28,7 @@
     <style name="AppTheme.AppBarOverlay" parent="ThemeOverlay.AppCompat.Dark.ActionBar" />
 
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light" />
+
+    <attr name="colorSelected" format="color|reference" />
 
 </resources>

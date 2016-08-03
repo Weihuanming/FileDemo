@@ -36,6 +36,7 @@ import com.example.sp.demo4.utils.FileUtils;
 import com.example.sp.demo4.utils.PreferenceUtils;
 
 import java.io.File;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -101,6 +102,13 @@ public class MainActivity extends AppCompatActivity {
 
         checkBox=(CheckBox)toolbar.findViewById(R.id.check);
         checkAll=(TextView)toolbar.findViewById(R.id.check_all);
+
+        if (drawerLayout.isDrawerOpen(navigationView))
+        {
+            drawerLayout.closeDrawers();
+
+            return;
+        }
 
         if (recyclerAdapter.flag)
         {
@@ -199,14 +207,17 @@ public class MainActivity extends AppCompatActivity {
 
         if (recyclerAdapter!=null){
             int count=recyclerAdapter.getSelectedItemCount();
-            menu.findItem(R.id.action_search).setVisible(count==0&&!recyclerAdapter.flag&&!cpmv);
+            menu.findItem(R.id.action_search).setVisible(count==0&&!recyclerAdapter.flag&&!cpmv&&type==null);
             boolean srch = false;
             menu.findItem(R.id.action_settings).setVisible(count==0&&!recyclerAdapter.flag&&!cpmv&&!srch);
+            menu.findItem(R.id.action_create).setVisible(type==null);
             menu.findItem(R.id.action_edit).setVisible(!isNull);
             menu.findItem(R.id.action_sort).setVisible(!isNull);
             menu.findItem(R.id.action_delete).setVisible(count>=1);
             menu.findItem(R.id.action).setVisible(count>=1);
             menu.findItem(R.id.action_rename).setVisible(count==1);
+            menu.findItem(R.id.action_copy).setVisible(type==null);
+            menu.findItem(R.id.action_move).setVisible(type==null);
             menu.findItem(R.id.cancel).setVisible(cpmv);
             menu.findItem(R.id.done).setVisible(cpmv);
         }
@@ -235,6 +246,9 @@ public class MainActivity extends AppCompatActivity {
         if (type!=null){
             switch (type){
                 case "image":
+                    recyclerAdapter.addAll(getImageLibrary(context));
+                    break;
+                case "large_image":
                     recyclerAdapter.addAll(getImageLibrary(context));
                     break;
             }
@@ -275,6 +289,9 @@ public class MainActivity extends AppCompatActivity {
                 case R.id.navigation_image:
                     setType("image");
                     return true;
+                case R.id.navigation_largerimage:
+                    setType("large_image");
+                    return true;
             }
             drawerLayout.closeDrawers();
             switch (item.getItemId()){
@@ -310,6 +327,10 @@ public class MainActivity extends AppCompatActivity {
                 case "image":
                     recyclerAdapter.setItemLayout(R.layout.list_item1);
                     recyclerAdapter.setSpanCount(getResources().getInteger(R.integer.span_count1));
+                    break;
+                case "large_image":
+                    recyclerAdapter.setItemLayout(R.layout.list_item1_1);
+                    recyclerAdapter.setSpanCount(getResources().getInteger(R.integer.span_count2));
                     break;
             }
         }else {
@@ -365,7 +386,7 @@ public class MainActivity extends AppCompatActivity {
             });
             return;
         }
-        else if(!path.getText().toString().equals(getString(R.string.device_store))&&!cpmv&&name==null) {
+        else if(!path.getText().toString().equals(getString(R.string.device_store))&&!cpmv&&name==null&&type==null) {
             toolbar.setNavigationIcon(R.drawable.ic_back);
             toolbar.setNavigationOnClickListener(v -> {
                 if (!FileUtils.isStorage(currentDirectory)) {
@@ -373,7 +394,11 @@ public class MainActivity extends AppCompatActivity {
                     return;
                 }
             });
-        }else if (name!=null){
+        }else if (name==null&&type==null){
+            toolbar.setNavigationIcon(R.drawable.ic_menu);
+            toolbar.setNavigationOnClickListener(v->drawerLayout.openDrawer(navigationView));
+
+        } else if (name!=null||type!=null){
             toolbar.setNavigationIcon(R.drawable.ic_back);
 
             toolbar.setNavigationOnClickListener(v->finish());
@@ -855,11 +880,23 @@ public class MainActivity extends AppCompatActivity {
                     {
                         try
                         {
-                            Intent intent = new Intent(Intent.ACTION_VIEW);
 
-                            intent.setDataAndType(Uri.fromFile(file), getMimeType(file));
+                            if (getMimeType(file).startsWith("image")){
+                                Intent intent=new Intent(MainActivity.this,ImageActivity.class);
 
-                            startActivity(intent);
+                                intent.putExtra("which",position);
+
+                                intent.setData(Uri.fromFile(file));
+
+                                startActivity(intent);
+                            }
+                            else {
+                                Intent intent = new Intent(Intent.ACTION_VIEW);
+
+                                intent.setDataAndType(Uri.fromFile(file), getMimeType(file));
+
+                                startActivity(intent);
+                            }
                         }
                         catch (Exception e)
                         {
