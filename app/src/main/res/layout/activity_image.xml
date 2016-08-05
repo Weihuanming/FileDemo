@@ -1,15 +1,14 @@
-<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="horizontal"
-    tools:context="com.example.sp.demo4.activities.ImageActivity">
+    android:orientation="vertical"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="#000000"
         android:id="@+id/image_appbar_layout"
         android:theme="@style/AppTheme.AppBarOverlay">
 
@@ -32,13 +31,12 @@
         </android.support.v7.widget.Toolbar>
 
         <android.support.v4.view.ViewPager
-            android:background="#000000"
-            android:id="@+id/viewPager"
+            android:id="@+id/pager"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="match_parent"
+            android:background="#000000"
+            android:layout_marginBottom="50dp"/>
 
     </android.support.design.widget.AppBarLayout>
-
-
 
 </LinearLayout>
